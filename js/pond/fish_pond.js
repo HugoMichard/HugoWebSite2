@@ -14,11 +14,10 @@ class FishPond {
     this.vh = this.height/100;
     this.vw = this.width/100;
     this.c=0;
-    //this.base_image = new Image();
-    //this.base_image.src = '/home/hugo/Perso/PProjects/HugoWebSite2/imgs/texture2.png';
-    //this.texture_image = new Image();
-    //this.texture_image.src = '/home/hugo/Perso/PProjects/HugoWebSite2/imgs/texture3.jpg';
-
+    this.base_image = new Image();
+    this.base_image.src = 'imgs/texture2.png';
+    this.texture_image = new Image();
+    this.texture_image.src = 'imgs/texture3.jpg';
     this.spots=[new Target(0,0,0)];
     for(let i = 1;i < 100;i++)
       this.spots.push(new Target(0,0,0,this.spots[i-1]));
@@ -55,21 +54,18 @@ class FishPond {
 
     console.log("INITIALIZING WATER MODEL")
     var waterModel = new water.WaterModel(this.width, this.height, {
-			resolution:2.0,
+			resolution:3.0,
 			interpolate:false,
 			damping:0.985,
 			clipping:5,
 			evolveThreshold:0.05,
-			maxFps:30,
-			showStats:true
+      maxFps: 20
 		});
     console.log("INITIALIZING WATER CANVAS")
 
     this.watercanvas = new water.WaterCanvas(this, waterModel, {
-      lightRefraction:9.0,
+      lightRefraction:20.0,
 			lightReflection:0.1,
-			maxFps:20,
-			showStats:true
     });
     console.log("INITIALIZING RAIN DROPS")
 
@@ -99,7 +95,7 @@ class FishPond {
 
       this.render(ctx);
 
-      setTimeout(startAnimation, 1000/30);
+      setTimeout(startAnimation, 20);
     };
     const addExtraFish = () => {
         if(this.numberOfFish < this.maxFish) {
@@ -115,12 +111,9 @@ class FishPond {
 
   render(ctx){
     ctx.globalAlpha = 1;
-    ctx.fillStyle='#66ccff';
-    ctx.fillRect(0, 0,this.width,this.height);
-    ctx.globalAlpha = 0.7;
-    //ctx.drawImage(this.base_image, 0, 0, this.width, this.height);
+    ctx.drawImage(this.base_image, 0, 0, this.width, this.height);
     ctx.globalAlpha = 0.3;
-    //ctx.drawImage(this.texture_image, 0, 0, this.width, this.height);
+    ctx.drawImage(this.texture_image, 0, 0, this.width, this.height);
     ctx.globalAlpha = 0.9;
 
     this.fish.sort((a,b)=>b.mass-a.mass);
@@ -128,7 +121,7 @@ class FishPond {
       this.fish[i].render(ctx);
     for(let i = 0;i < this.foods.length;i++)
       this.foods[i].render(ctx);
-    this.watercanvas.drawNextFrame();
+    this.watercanvas.render();
 
     this.fontSize = this.vh*10;
     if(this.width/20 < this.fontSize)

@@ -5,7 +5,6 @@ class WaterCanvas {
         props = props || {};
         this.lightRefraction 	= props.lightRefraction 	|| 9.0;
         this.lightReflection	= props.lightReflection 	|| 0.1;
-        this.showStats			= props.showStats 			|| false;
 
         this.pond = pond;
         this.waterModel = waterModel;
@@ -19,22 +18,9 @@ class WaterCanvas {
         }
 
         this.ctx = this.canvas.getContext('2d');  
-        this.ctxHelp = this.canvasHelp.getContext('2d');  		
-
-        // Find out the FPS at certain intervals
-        this.fps = -1;
-        if(this.showStats){	
-            this.fpsCounter = 0;
-            this.prevMs = 0;
-                
-            var self = this; 
-            setInterval(function(){
-                self.findFps();
-            }, 1000);
-        }
-
+        this.ctxHelp = this.canvasHelp.getContext('2d');
     }
-    drawNextFrame() {
+    render() {
         if(!this.waterModel.isEvolving()){
             // Wait some time and try again
             var self = this; 
@@ -46,9 +32,8 @@ class WaterCanvas {
         // Make the canvas give us a CanvasDataArray. 
         // Creating an array ourselves is slow!!!
         // https://developer.mozilla.org/en/HTML/Canvas/Pixel_manipulation_with_canvas
-
-		this.pixelsIn = this.ctx.getImageData(0, 0, this.pond.width, this.pond.height).data;
         var imgDataOut = this.ctx.getImageData(0, 0, this.pond.width, this.pond.height);
+		this.pixelsIn = new Uint8ClampedArray(imgDataOut.data);
         var pixelsOut = imgDataOut.data;
         for (var i = 0; n = pixelsOut.length, i < n; i += 4) {
             var pixel = i/4;
@@ -89,22 +74,6 @@ class WaterCanvas {
 
         // Make the browser call this function at a new render frame
         var self = this; // For referencing 'this' in internal eventListeners
-                
-    }
-    findFps(){
-        if(!this.showStats)
-            return;
-        
-        var nowMs = new Date().getTime();
-        var diffMs = nowMs - this.prevMs;
-    
-        this.fps = Math.round( ((this.fpsCounter*1000) / diffMs) * 10.0 ) / 10.0;
-        
-        this.prevMs = nowMs;
-        this.fpsCounter = 0;
-    }
-    getFps(){
-        return this.fps;
     }
     setLightRefraction(lightRefraction){
         this.lightRefraction = lightRefraction;	
@@ -124,7 +93,6 @@ class WaterModel {
 		this.damping 			= props.damping 		|| 0.985;
 		this.clipping 			= props.clipping 		|| 5;	
 		this.maxFps 			= props.maxFps 			|| 30;
-		this.showStats 			= props.showStats 		|| false;
 		this.evolveThreshold 	= props.evolveThreshold	|| 0.05;
 
 		this.width = Math.ceil(width/this.resolution);
@@ -138,18 +106,6 @@ class WaterModel {
 		this.setMaxFps(this.maxFps);
 
 		this.evolving = false; // Holds whether it's needed to render frames
-
-		// Find out the FPS at certain intervals
-		this.fps = -1;
-		if(this.showStats){	
-			this.fpsCounter = 0;
-			this.prevMs = 0;
-				
-			var self = this; 
-			setInterval(function(){
-				self.findFps();
-			}, 1000);
-		}
 	}
 
 	getWater(x, y) {
@@ -272,22 +228,6 @@ class WaterModel {
 
 	isEvolving() {
 		return this.evolving;
-	}
-
-	findFps() {
-		if(!this.showStats)
-			return;
-	
-		var nowMs = new Date().getTime();
-		var diffMs = nowMs - this.prevMs;
-
-		this.fps = Math.round( ((this.fpsCounter*1000) / diffMs) * 10.0 ) / 10.0;
-		
-		this.prevMs = nowMs;
-		this.fpsCounter = 0;
-	}
-	getFps() {
-		return this.fps
 	}
 	setMaxFps(maxFps) {
 		this.maxFps = maxFps;
